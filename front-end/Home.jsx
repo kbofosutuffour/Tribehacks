@@ -1,11 +1,40 @@
 import { StatusBar } from 'expo-status-bar';
-import { Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableWithoutFeedback, View, Animated, Easing } from 'react-native';
 import { Audio } from 'expo-av';
+import { useState, useRef, useEffect } from 'react';
 
-export default function Home(props) {
+
+export default function Home(props) { 
 
     const [permissionResponse, requestPermission] = Audio.usePermissions();
+    const angle = useRef(new Animated.Value(0)).current;
+    const [tiltLeft, setTilt] = useState(false);
 
+    useEffect(() => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(angle, {
+                    toValue: 1,
+                    duration: 500, 
+                    useNativeDriver: true,
+                    easing: Easing.linear
+                }),
+                Animated.timing(angle, {
+                    toValue: 0,
+                    duration: 500, 
+                    useNativeDriver: true,
+                    easing: Easing.linear
+                }),
+        ]) 
+        ).start();
+        setTilt(!tiltLeft);
+    }, [])
+
+    const interpolated = angle.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 1]
+      });
+    
     async function getPermission() {
         try {
             if (!permissionResponse.granted) {
@@ -22,12 +51,14 @@ export default function Home(props) {
         }
     }
 
-    return (
+    return ( 
         <View style={styles.column}>
             {/* <Text style={styles.wm}>W&M</Text> */}
             <Image style={styles.wm} source={require('./assets/wm_vertical_single_line_green.png')}></Image>
-            <Image style={styles.crab} source={require('./assets/crab.png')} />
-            <TouchableWithoutFeedback onPress={() => getPermission()}>
+            <Animated.View style={{transform: [{translateX: interpolated}]}}>
+                <Image style={styles.crab} source={require('./assets/crab.png')} />
+            </Animated.View>
+            <TouchableWithoutFeedback onPress={() => getPermission()}> 
                 <Text style={styles.start}>Start Analysis</Text>
             </TouchableWithoutFeedback>
             <Text style={styles.tribehacks}>Tribehacks</Text>
@@ -53,9 +84,14 @@ const styles = StyleSheet.create({
         width: 150,
         height: 150,
         borderRadius: 75,
+        // transform: [
+        //     {scale: this.state.scale},
+        //     {rotateY: this.state.rotateY},
+        //     {perspective: 1000}, // without this line this Animation will not render on Android while working fine on iOS
+        //   ]
     },
     tribehacks: {
-        fontSize: 30,
+        fontSize: 30, 
         color: '#115740',
     },
     start: {

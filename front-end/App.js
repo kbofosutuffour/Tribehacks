@@ -8,12 +8,13 @@ import Output from './Output';
 export default function App() {
 
   const [view, setView] = useState({home: true});
+  const [output, setOutput] = useState();
 
   return (
     <View style={styles.container}>
       {view.home && <Home setView={setView} />}
-      {view.input && <Input setView={setView} />}
-      {view.output && <Output setView={setView} />}
+      {view.input && <Input setView={setView} setOutput={setOutput} />}
+      {view.output && <Output setView={setView} output={output} />}
       <StatusBar style="auto" />
     </View>
   );

@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { useState } from 'react';
 import { Audio } from 'expo-av';
+import axios from "axios";
 
 export default function Input(props) {
 
@@ -29,7 +30,7 @@ export default function Input(props) {
         }
       }
     
-      async function stopRecording() {
+    async function stopRecording() {
         console.log('Stopping recording..');
         setRecording(undefined);
         await recording.stopAndUnloadAsync();
@@ -41,6 +42,18 @@ export default function Input(props) {
         const uri = recording.getURI();
         setSample(true);
         console.log('Recording stopped and stored at', uri);
+
+        const form = new FormData();
+        form.append('sound', uri)
+
+        await axios
+          .post('https://classic-pegasus-factual.ngrok-free.app/', {sound: form}, {
+            headers: {
+                'content-type': 'multipart/form-data'
+            }
+          })
+          .then(res => props.setOutputData(res.data))
+          .catch(err => console.log(err))
       }
 
     return (
