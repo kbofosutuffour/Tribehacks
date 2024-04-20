@@ -1,13 +1,33 @@
 import { StatusBar } from 'expo-status-bar';
 import { Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Audio } from 'expo-av';
 
 export default function Home(props) {
+
+    const [permissionResponse, requestPermission] = Audio.usePermissions();
+
+    async function getPermission() {
+        try {
+            if (!permissionResponse.granted) {
+                console.log('Requesting permission..');
+                await requestPermission();
+              }
+        } catch {
+            console.log('There was an error asking for audio permission');
+        } finally {
+            if (permissionResponse.status == 'granted') {
+                props.setView({'input': true});
+                permissionResponse.granted = false;
+            }
+        }
+    }
+
     return (
         <View style={styles.column}>
             {/* <Text style={styles.wm}>W&M</Text> */}
             <Image style={styles.wm} source={require('./assets/wm_vertical_single_line_green.png')}></Image>
             <Image style={styles.crab} source={require('./assets/crab.png')} />
-            <TouchableWithoutFeedback onPress={() => props.setView({'input': true})}>
+            <TouchableWithoutFeedback onPress={() => getPermission()}>
                 <Text style={styles.start}>Start Analysis</Text>
             </TouchableWithoutFeedback>
             <Text style={styles.tribehacks}>Tribehacks</Text>

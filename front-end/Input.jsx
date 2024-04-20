@@ -14,10 +14,6 @@ export default function Input(props) {
 
     async function startRecording() {
         try {
-          if (permissionResponse.status !== 'granted') {
-            console.log('Requesting permission..');
-            await requestPermission();
-          }
           await Audio.setAudioModeAsync({
             allowsRecordingIOS: true,
             playsInSilentModeIOS: true,
@@ -59,9 +55,9 @@ export default function Input(props) {
             {sample && !recording && <Image style={styles.crab} source={require('./assets/crab_hmm.png')} /> }
             {recording && <Image style={styles.crab} source={require('./assets/crab_listen.png')} />}
             <TouchableWithoutFeedback 
-                onPressIn={() => setRecording(true)} 
+                onPressIn={() => startRecording()} 
                 onPressOut={() => {
-                    setRecording(false);
+                    stopRecording();
                     setSample(true);
                 }}>
                 <View style={recording ? styles.isRecording : styles.isNotRecording}>
