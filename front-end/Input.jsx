@@ -44,15 +44,18 @@ export default function Input(props) {
         console.log('Recording stopped and stored at', uri);
 
         const form = new FormData();
-        form.append('sound', uri)
+        form.append('sound', uri);
 
         await axios
-          .post('https://classic-pegasus-factual.ngrok-free.app/', {sound: form}, {
+          .post('https://classic-pegasus-factual.ngrok-free.app', {sound: uri}, {
             headers: {
                 'content-type': 'multipart/form-data'
             }
           })
-          .then(res => props.setOutputData(res.data))
+          .then(res => {
+            props.setOutput(res.data);
+            console.log(res.data)
+        })
           .catch(err => console.log(err))
       }
 
