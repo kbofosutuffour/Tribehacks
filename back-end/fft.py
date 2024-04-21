@@ -15,7 +15,13 @@ api = Api(app)
 class sendData(Resource):
     def post(self):
         data = request.data
-        return {'data': 'data'}
+        predicted_type, predicted_load = predictData(data['input_type'], data['input_load'])
+        return {
+            'data': 'data', 
+            'predicted_type': predicted_type,
+            'predicted_load': predicted_load,
+            'code': 200,
+        }
 
 api.add_resource(sendData, '/')
 
@@ -56,54 +62,58 @@ def find_dom_freq_spec_centroid(freqs, FFT):
     
 # bands = [(0, 500), (500, 2000), (2000, 20000)]
 
-features = []
-pump_types = []
-loads = []
+def predictData(inputPump, inputLoad):
+    features = []
+    pump_types = []
+    loads = []
 
-files_and_data = [("pump1.wav", 0, 10),
-                   ("pump2.wav", 0, 10),
-                   ("pump4.wav", 0, 10),
-                   ("pump5.wav", 0, 10),
-                   ("low1.wav", 1, 11),
-                   ("low2.wav", 1, 11),
-                   ("low4.wav", 1, 11),
-                   ("low5.wav", 1, 11),
-                   ("mid1.wav", 1, 12),
-                   ("mid2.wav", 1, 12),
-                   ("mid4.wav", 1, 12),
-                   ("mid5.wav", 1, 12),
-                   ("high1.wav", 1, 13),
-                   ("high2.wav", 1, 13),
-                   ("high4.wav", 1, 13),
-                   ("high5.wav", 1, 13)]
+    files_and_data = [("pump1.wav", 0, 10),
+                    ("pump2.wav", 0, 10),
+                    ("pump4.wav", 0, 10),
+                    ("pump5.wav", 0, 10),
+                    ("low1.wav", 1, 11),
+                    ("low2.wav", 1, 11),
+                    ("low4.wav", 1, 11),
+                    ("low5.wav", 1, 11),
+                    ("mid1.wav", 1, 12),
+                    ("mid2.wav", 1, 12),
+                    ("mid4.wav", 1, 12),
+                    ("mid5.wav", 1, 12),
+                    ("high1.wav", 1, 13),
+                    ("high2.wav", 1, 13),
+                    ("high4.wav", 1, 13),
+                    ("high5.wav", 1, 13)]
 
-for filename, type, load in files_and_data:
-      freqs, FFT = computeFFT(filename)
-      features.append(find_dom_freq_spec_centroid(freqs, FFT))
-      pump_types.append(type)
-      loads.append(load)
+    for filename, type, load in files_and_data:
+        freqs, FFT = computeFFT(filename)
+        features.append(find_dom_freq_spec_centroid(freqs, FFT))
+        pump_types.append(type)
+        loads.append(load)
 
-x = np.array(features)
+    x = np.array(features)
 
-y_type = np.array(pump_types)
-y_load = np.array(loads)
+    y_type = np.array(pump_types)
+    y_load = np.array(loads)
 
-type_model = RandomForestRegressor(n_estimators = 100).fit(x, y_type)
-load_model = RandomForestRegressor(n_estimators = 100).fit(x, y_load)
+    type_model = RandomForestRegressor(n_estimators = 100).fit(x, y_type)
+    load_model = RandomForestRegressor(n_estimators = 100).fit(x, y_load)
 
-unknown_freqs, unknown_FFT = computeFFT("low3.wav")
-plotFFT(unknown_freqs, unknown_FFT, "Unknown")
-known_load = None # load must be known if you want to see if pump is functioning normally
-known_type = None
-unknown_features = find_dom_freq_spec_centroid(unknown_freqs, unknown_FFT)
-print(f"unknown features: {unknown_features}")
-predicted_load = load_model.predict([unknown_features])
-predicted_type = type_model.predict([unknown_features])
+    unknown_freqs, unknown_FFT = computeFFT("low3.wav")
+    plotFFT(unknown_freqs, unknown_FFT, "Unknown")
+    known_load = inputLoad # load must be known if you want to see if pump is functioning normally
+    known_type = inputPump
+    unknown_features = find_dom_freq_spec_centroid(unknown_freqs, unknown_FFT)
+    print(f"unknown features: {unknown_features}")
+    predicted_load = load_model.predict([unknown_features])
+    predicted_type = type_model.predict([unknown_features])
 
-if known_load != None:
-    print(f"load of test pump: {known_load}")
-print(f"predicted pump type: {float(predicted_type)}")
-print(f"predicted pump load: {float(predicted_load)}")
+    if known_load != None:
+        print(f"load of test pump: {known_load}")
+    print(f"predicted pump type: {float(predicted_type)}")
+    print(f"predicted pump load: {float(predicted_load)}")
+
+    return predicted_type, predicted_load
+
 
 if predicted_load == known_load:
     print("the pump is functioning normally under specified load")

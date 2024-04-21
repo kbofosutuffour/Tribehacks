@@ -61,6 +61,9 @@ export default function Input(props) {
             name: 'input.m4a',
             type: 'audio/m4a',
           })
+        form.append('input_type', pumpType);
+        form.append('input_load', pumpLoad);
+        console.log(form)
 
         await axios
           .post('https://classic-pegasus-factual.ngrok-free.app', form, {
@@ -70,6 +73,7 @@ export default function Input(props) {
           })
           .then(res => {
             props.setOutput(res.data);
+            console.log(res.data);
         })
           .catch(err => console.log(err))
       }
@@ -131,8 +135,8 @@ export default function Input(props) {
                     </View>
                 </TouchableWithoutFeedback><Text style={styles.instructions}>Press and hold to record audio of your machinery</Text>
                 <View style={styles.row}>
-                    <TouchableWithoutFeedback>
-                        <Text style={styles.playBack}>Play Back</Text>
+                    <TouchableWithoutFeedback onPress={() => setView({input: true})}>
+                        <Text style={styles.submit}>Back</Text>
                     </TouchableWithoutFeedback>
                     {props.output && <TouchableWithoutFeedback
                         onPress={() => props.setView({ 'output': true })}
