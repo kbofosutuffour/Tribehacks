@@ -10,10 +10,10 @@ from werkzeug.utils import secure_filename
 import os
 
 
-UPLOAD_FOLDER = os.path.join(os.path.abspath(os.getcwd()), 'output')
+UPLOAD_FOLDER = os.path.join(os.path.abspath(os.getcwd()))
 ALLOWED_EXTENSIONS = {'wav', 'm4a'}
 
-app = Flask(__name__)   
+app = Flask(__name__)
 api = Api(app)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -29,11 +29,13 @@ def allowed_file(filename):
 def convertAudio(file):
     print(file.filename)
     filename = secure_filename(file.filename)
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    sound = AudioSegment.from_file('input.m4a', format='m4a')
+    file_handle = sound.export('input.wav', format='wav')
+    analyzeData()
 
-def analyzeData(input = None):
+def analyzeData():
 
-    s_rate, signal = wavfile.read("tibet.wav")
+    s_rate, signal = wavfile.read("input.wav")
 
     FFT = abs(scipy.fft.fft(signal))
     freqs = fftpk.fftfreq(len(FFT), (1.0/s_rate))
@@ -42,7 +44,7 @@ def analyzeData(input = None):
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Amplitude')
     plt.savefig('scan.png')
-    # plt.show()
+    plt.show()
 
 api.add_resource(sendData, '/')
 
