@@ -12,6 +12,7 @@ from flask_restful import reqparse, abort, Api, Resource
 from pydub import AudioSegment
 from werkzeug.utils import secure_filename
 import os
+import math
 
 
 UPLOAD_FOLDER = os.path.join(os.path.abspath(os.getcwd()))
@@ -25,11 +26,12 @@ matplotlib.use('agg')
 class sendData(Resource):
     def post(self):
         data = convertAudio(request.files['sound'])
-        predicted_type, predicted_load = predictData(request.form['input_type'], request.form['input_load'])
+        predicted_load, is_correct = predictData(request.form['input_load'])
+        print(predicted_load, type(predicted_load))
         return {
             'url': 'static/scan.png', 
-            'predicted_type': predicted_type,
-            'predicted_load': predicted_load,
+            'predicted_load': predicted_load[0],
+            'is_correct': is_correct,
             'code': 200,
         }
 
@@ -68,59 +70,46 @@ def find_dom_freq_spec_centroid(freqs, FFT):
     index = int(np.argmax(FFT) / 2)
     return [freqs[index], np.sum(freqs * FFT.shape[0]) / np.sum(FFT)]
 
-def predictData(inputPump, inputLoad):
+def predictData(inputLoad):
     features = []
-    pump_types = []
     loads = []
 
-    files_and_data = [("pump1.wav", 0, 10),
-                    ("pump2.wav", 0, 10),
-                    ("pump4.wav", 0, 10),
-                    ("pump5.wav", 0, 10),
-                    ("low1.wav", 1, 11),
-                    ("low2.wav", 1, 11),
-                    ("low4.wav", 1, 11),
-                    ("low5.wav", 1, 11),
-                    ("mid1.wav", 1, 12),
-                    ("mid2.wav", 1, 12),
-                    ("mid4.wav", 1, 12),
-                    ("mid5.wav", 1, 12),
-                    ("high1.wav", 1, 13),
-                    ("high2.wav", 1, 13),
-                    ("high4.wav", 1, 13),
-                    ("high5.wav", 1, 13)]
+    files_and_data = [("low_state1.wav", 9.5),
+                    ("low_state2.wav", 9.5),
+                    ("low_state2.wav", 9.5),
+                    ("low_state2.wav", 9.5),
+                    ("low_state2.wav", 9.5),
+                    ("high_state1.wav", 2950),
+                    ("high_state1.wav", 2950),
+                    ("high_state1.wav", 2950),
+                    ("high_state1.wav", 2950),
+                    ("high_state1.wav", 2950)]
 
-    for filename, type, load in files_and_data:
+    for filename, load in files_and_data:
         freqs, FFT = computeFFT(filename)
         features.append(find_dom_freq_spec_centroid(freqs, FFT))
-        pump_types.append(type)
         loads.append(load)
 
     x = np.array(features)
 
-    y_type = np.array(pump_types)
     y_load = np.array(loads)
 
-    type_model = RandomForestRegressor(n_estimators = 100).fit(x, y_type)
     load_model = RandomForestRegressor(n_estimators = 100).fit(x, y_load)
 
-    unknown_freqs, unknown_FFT = computeFFT("low3.wav")
-    plotFFT(unknown_freqs, unknown_FFT, "Unknown")
+    input_freqs, input_FFT = computeFFT("input.wav")
     known_load = inputLoad # load must be known if you want to see if pump is functioning normally
-    known_type = inputPump
-    unknown_features = find_dom_freq_spec_centroid(unknown_freqs, unknown_FFT)
-    print(f"unknown features: {unknown_features}")
-    predicted_load = load_model.predict([unknown_features])
-    predicted_type = type_model.predict([unknown_features])
+    input_features = find_dom_freq_spec_centroid(input_freqs, input_FFT)
+    print(f"Input audio features: {input_features}")
+    predicted_load = load_model.predict([input_features])
 
-    if known_load != None:
-        print(f"load of test pump: {known_load}")
-    print(f"predicted pump type: {float(predicted_type)}")
     print(f"predicted pump load: {float(predicted_load)}")
 
-    return predicted_type, predicted_load
+    if math.isclose(predicted_load, float(known_load), rel_tol=50):
+        print("pump is functioning normally under specified load")
+    else:
+        print("the pump is functioning abnormally under specified load")
 
-
+    return predicted_load, math.isclose(predicted_load, float(known_load), rel_tol=50)
 
 api.add_resource(sendData, '/')
 

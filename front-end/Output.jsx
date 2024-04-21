@@ -33,10 +33,17 @@ export default function Output(props) {
     return (
             <View style={styles.column}>
                 <Image style={styles.crab} source={require('./assets/crab_behold.png')} />
+                <Text style={styles.instructions}>{`Your input load: ${props.input}  `}</Text>
+                <Text style={styles.instructions}>{`Predicted: ${props.output.predicted_load}`}</Text>
+                <Text style={styles.instructions}>{
+                    props.output.is_correct ? 
+                        'Your pump is functioning normally under specified load' : 
+                        "Your pump is functioning abnormally under specified load"}
+                </Text>
+
                 <View>
                     <Image style={styles.output} source={{uri: `https://classic-pegasus-factual.ngrok-free.app/${props.output.url}`}}></Image>
                 </View>
-                {console.log(props.output.url)}
                 <View style={styles.row}>
                     <TouchableWithoutFeedback onPress={() => {
                         props.setOutput();
@@ -63,7 +70,14 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        rowGap: 40,
+        rowGap: 30,
+    },
+    row: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        columnGap: 15,
     },
     crab: {
         width: 150,
@@ -101,5 +115,9 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#9a38f3',
         overflow: 'hidden'
-    }
+    },
+    instructions: {
+        fontSize: 20,
+        textAlign: 'center'
+    },
 })

@@ -20,7 +20,7 @@ export default function Input(props) {
     const [hasReturned, setHasReturned] = useState(false);
     const [sound, setSound] = useState();
 
-    const [pumpType, setPumpType] = useState(null);
+    // const [pumpType, setPumpType] = useState(null);
     const [pumpLoad, setPumpLoad] = useState(null);
 
     async function startRecording() {
@@ -61,7 +61,6 @@ export default function Input(props) {
             name: 'input.m4a',
             type: 'audio/m4a',
           })
-        form.append('input_type', pumpType);
         form.append('input_load', pumpLoad);
         console.log(form)
 
@@ -108,20 +107,23 @@ export default function Input(props) {
             {sample && !recording && <Image style={styles.crab} source={require('./assets/crab_hmm.png')} /> }
             {recording && <Image style={styles.crab} source={require('./assets/crab_listen.png')} />}
             {view.input && <>
-                <View style={styles.row}>
+                {/* <View style={styles.row}>
                     <Text style={styles.instructions}>Enter your pump type: </Text>
                     <TextInput style={styles.input} onChangeText={text => setPumpType(text)} />
-                </View>
+                </View> */}
                 <View style={styles.row}>
                     <Text style={styles.instructions}>Enter your pump load: </Text>
                     <TextInput style={styles.input} onChangeText={text => setPumpLoad(text)} />
                 </View>
-                {(pumpLoad > 0 && pumpType > 0) && <>
-                <TouchableWithoutFeedback onPress={() => setView({'record': true})}>
+                {(pumpLoad > 0) && <>
+                <TouchableWithoutFeedback onPress={() => {
+                    setView({'record': true});
+                    props.setInput(pumpLoad);
+                }}>
                     <Text style={styles.submit}>Submit</Text>
                 </TouchableWithoutFeedback>
                 </>}
-                {(!pumpLoad || !pumpType) && <Text style={styles.cannotSubmit}>Next</Text>}
+                {(!pumpLoad) && <Text style={styles.cannotSubmit}>Next</Text>}
             </>}
             {view.record && <>
                 <TouchableWithoutFeedback
