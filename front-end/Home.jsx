@@ -7,19 +7,20 @@ import { useState, useRef, useEffect } from 'react';
 export default function Home(props) { 
 
     const [permissionResponse, requestPermission] = Audio.usePermissions();
-    const angle = useRef(new Animated.Value(0)).current;
-    const [tiltLeft, setTilt] = useState(false);
+    const displacement = useRef(new Animated.Value(0)).current;
+    const [moveLeft, setX] = useState(false);
+    const [hasPressed, setHasPressed] = useState(false);
 
     useEffect(() => {
         Animated.loop(
             Animated.sequence([
-                Animated.timing(angle, {
+                Animated.timing(displacement, {
                     toValue: 1,
                     duration: 500, 
                     useNativeDriver: true,
                     easing: Easing.linear
                 }),
-                Animated.timing(angle, {
+                Animated.timing(displacement, {
                     toValue: 0,
                     duration: 500, 
                     useNativeDriver: true,
@@ -27,12 +28,12 @@ export default function Home(props) {
                 }),
         ]) 
         ).start();
-        setTilt(!tiltLeft);
+        setX(!moveLeft);
     }, [])
 
-    const interpolated = angle.interpolate({
+    const interpolated = displacement.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, 1]
+        outputRange: [-10, 10]
       });
     
     async function getPermission() {
@@ -58,8 +59,11 @@ export default function Home(props) {
             <Animated.View style={{transform: [{translateX: interpolated}]}}>
                 <Image style={styles.crab} source={require('./assets/crab.png')} />
             </Animated.View>
-            <TouchableWithoutFeedback onPress={() => getPermission()}> 
-                <Text style={styles.start}>Start Analysis</Text>
+            <TouchableWithoutFeedback 
+                onPress={() => getPermission()}
+                onPressIn={() => setHasPressed(true)}
+                onPressOut={() => setHasPressed(false)}> 
+                <Text style={hasPressed ? styles.startPress : styles.start}>Start Analysis</Text>
             </TouchableWithoutFeedback>
             <Text style={styles.tribehacks}>Tribehacks</Text>
         </View>
@@ -97,11 +101,23 @@ const styles = StyleSheet.create({
     start: {
         padding: 20,
         fontSize: 25,
+        fontWeight: 'bold',
         borderRadius: 20,
-        color: '#9a38f3',
+        color: '#115740',
         backgroundColor: 'white',
-        borderWidth: 2,
-        borderColor: '#9a38f3',
+        borderWidth: 5,
+        borderColor: '#115740',
+        overflow: 'hidden'
+    },
+    startPress: {
+        padding: 20,
+        fontSize: 25,
+        fontWeight: 'bold',
+        borderRadius: 20,
+        color: '#B9975B',
+        backgroundColor: 'white',
+        borderWidth: 5,
+        borderColor: '#B9975B',
         overflow: 'hidden'
     }
 })

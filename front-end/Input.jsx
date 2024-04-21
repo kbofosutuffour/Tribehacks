@@ -12,6 +12,9 @@ export default function Input(props) {
     const [recording, setRecording] = useState();
     const [permissionResponse, requestPermission] = Audio.usePermissions();
     const [sample, setSample] = useState();
+    const [hasPressed, setHasPressed] = useState(false);
+    const [hasReturned, setHasReturned] = useState(false);
+    const [sound, setSound] = useState();
 
     async function startRecording() {
         try {
@@ -42,6 +45,7 @@ export default function Input(props) {
         const uri = recording.getURI();
         setSample(true);
         console.log('Recording stopped and stored at', uri);
+        setSound(uri);
         const audioFile = new File([uri], 'input.m4a', { type: 'audio/m4a' });
 
         const form = new FormData();
@@ -59,16 +63,33 @@ export default function Input(props) {
           })
           .then(res => {
             props.setOutput(res.data);
-            console.log(res.data)
         })
           .catch(err => console.log(err))
       }
+      
 
+    async function playSound() {
+        console.log('testing')
+        try {
+            console.log('Playing Sound');
+            await recording.playBack();
+        } catch {
+            console.log('Error playing sound')
+        }
+    }
+
+    
     return (
         <View style={styles.column}>
             <View style={styles.returnContainer}>
-                <TouchableWithoutFeedback onPress={() => props.setView({'home': true})}>
-                    <Text style={styles.return}>Return</Text>
+                <TouchableWithoutFeedback 
+                    onPress={() => props.setView({'home': true})}
+                    onPressIn={() => setHasReturned(true)}
+                    onPressOut={() => setHasReturned(false)}>
+                    <Text style={{
+                        color: hasReturned ? 'red' : '#115740',
+                        fontSize: 25,
+                    }}>Return</Text>
                 </TouchableWithoutFeedback>
             </View>
 
@@ -91,8 +112,11 @@ export default function Input(props) {
                 <TouchableWithoutFeedback>
                     <Text style={styles.playBack}>Play Back</Text>
                 </TouchableWithoutFeedback>
-                <TouchableWithoutFeedback onPress={() => props.setView({'output': true})}>
-                    <Text style={styles.submit}>Submit</Text>
+                <TouchableWithoutFeedback
+                    onPress={() => props.setView({'output': true})}
+                    onPressIn={() => setHasPressed(true)}
+                    onPressOut={() => setHasPressed(false)}>
+                    <Text style={hasPressed ? styles.submitPress : styles.submit}>Submit</Text>
                 </TouchableWithoutFeedback>
             </View>
             
@@ -121,22 +145,22 @@ const styles = StyleSheet.create({
         borderRadius: 75,
     },
     isNotRecording: {
-        height: 100,
+        height: 125,
         aspectRatio: 1,
         borderColor: 'black',
         borderWidth: 3,
-        borderRadius: 50,
+        borderRadius: 75,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
     },
     isRecording: {
-        height: 100,
+        height: 125,
         aspectRatio: 1,
         borderColor: 'red',
         borderWidth: 3,
-        borderRadius: 50,
+        borderRadius: 75,
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
@@ -160,11 +184,23 @@ const styles = StyleSheet.create({
     submit: {
         padding: 20,
         fontSize: 25,
+        fontWeight: 'bold',
         borderRadius: 20,
-        color: '#9a38f3',
+        color: '#115740',
         backgroundColor: 'white',
-        borderWidth: 2,
-        borderColor: '#9a38f3',
+        borderWidth: 5,
+        borderColor: '#115740',
+        overflow: 'hidden'
+    },
+    submitPress: {
+        padding: 20,
+        fontSize: 25,
+        fontWeight: 'bold',
+        borderRadius: 20,
+        color: '#B9975B',
+        backgroundColor: 'white',
+        borderWidth: 5,
+        borderColor: '#B9975B',
         overflow: 'hidden'
     },
     returnContainer: {
@@ -172,9 +208,4 @@ const styles = StyleSheet.create({
         right: '35%'
 
     },
-    return: {
-        color: 'red',
-        fontSize: 20,
-    }
-
 })
