@@ -38,10 +38,16 @@ export default function Output(props) {
                 </View>
                 {console.log(props.output.url)}
                 <View style={styles.row}>
-                    <TouchableWithoutFeedback onPress={() => props.setView({'input': true})}>
+                    <TouchableWithoutFeedback onPress={() => {
+                        props.setOutput();
+                        props.setView({'input': true});
+                        }}>
                         <Text style={styles.button}>Record Again</Text>
                     </TouchableWithoutFeedback>
-                    <TouchableWithoutFeedback onPress={() => props.setView({'home': true})}>
+                    <TouchableWithoutFeedback onPress={() => {
+                        props.setOutput();
+                        props.setView({'home': true});
+                        }}>
                         <Text style={styles.button}>Main</Text>
                     </TouchableWithoutFeedback>
                 </View>

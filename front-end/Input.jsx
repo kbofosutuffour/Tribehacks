@@ -112,12 +112,14 @@ export default function Input(props) {
                 <TouchableWithoutFeedback>
                     <Text style={styles.playBack}>Play Back</Text>
                 </TouchableWithoutFeedback>
-                <TouchableWithoutFeedback
+                {props.output && <TouchableWithoutFeedback
                     onPress={() => props.setView({'output': true})}
                     onPressIn={() => setHasPressed(true)}
                     onPressOut={() => setHasPressed(false)}>
                     <Text style={hasPressed ? styles.submitPress : styles.submit}>Submit</Text>
-                </TouchableWithoutFeedback>
+                </TouchableWithoutFeedback>}
+                {!props.output && <Text style={styles.cannotSubmit}>Submit</Text>}
+
             </View>
             
         </View>
@@ -190,6 +192,17 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderWidth: 5,
         borderColor: '#115740',
+        overflow: 'hidden'
+    },
+    cannotSubmit: {
+        padding: 20,
+        fontSize: 25,
+        fontWeight: 'bold',
+        borderRadius: 20,
+        color: 'gray',
+        backgroundColor: 'white',
+        borderWidth: 5,
+        borderColor: 'gray',
         overflow: 'hidden'
     },
     submitPress: {

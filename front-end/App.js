@@ -13,8 +13,8 @@ export default function App() {
   return (
     <View style={styles.container}>
       {view.home && <Home setView={setView} />}
-      {view.input && <Input setView={setView} setOutput={setOutput} />}
-      {view.output && <Output setView={setView} output={output} />}
+      {view.input && <Input setView={setView} setOutput={setOutput} output={output} />}
+      {view.output && <Output setView={setView} setOutput={setOutput} output={output} />}
       <StatusBar style="auto" />
     </View>
   );
