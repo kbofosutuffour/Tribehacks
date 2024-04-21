@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import { useState } from 'react';
 import { Audio } from 'expo-av';
 import axios from "axios";
@@ -9,12 +9,19 @@ export default function Input(props) {
     /** References expo-av documentation code at
      *  https://docs.expo.dev/versions/latest/sdk/audio/
      */
+
+    const [view, setView] = useState({input: true})
+
+
     const [recording, setRecording] = useState();
     const [permissionResponse, requestPermission] = Audio.usePermissions();
     const [sample, setSample] = useState();
     const [hasPressed, setHasPressed] = useState(false);
     const [hasReturned, setHasReturned] = useState(false);
     const [sound, setSound] = useState();
+
+    const [pumpType, setPumpType] = useState(null);
+    const [pumpLoad, setPumpLoad] = useState(null);
 
     async function startRecording() {
         try {
@@ -96,31 +103,48 @@ export default function Input(props) {
             {!sample && !recording && <Image style={styles.crab} source={require('./assets/crab.png')} /> }
             {sample && !recording && <Image style={styles.crab} source={require('./assets/crab_hmm.png')} /> }
             {recording && <Image style={styles.crab} source={require('./assets/crab_listen.png')} />}
-            <TouchableWithoutFeedback 
-                onPressIn={() => startRecording()} 
-                onPressOut={() => {
-                    stopRecording();
-                    setSample(true);
-                }}>
-                <View style={recording ? styles.isRecording : styles.isNotRecording}>
-                    <Image style={styles.image} source={require('./assets/sound-recording-9.png')} />
+            {view.input && <>
+                <View style={styles.row}>
+                    <Text style={styles.instructions}>Enter your pump type: </Text>
+                    <TextInput style={styles.input} onChangeText={text => setPumpType(text)} />
                 </View>
-            </TouchableWithoutFeedback>
-            <Text style={styles.instructions}>Press and hold to record audio of your machinery</Text>
-
-            <View style={styles.row}>
-                <TouchableWithoutFeedback>
-                    <Text style={styles.playBack}>Play Back</Text>
+                <View style={styles.row}>
+                    <Text style={styles.instructions}>Enter your pump load: </Text>
+                    <TextInput style={styles.input} onChangeText={text => setPumpLoad(text)} />
+                </View>
+                {(pumpLoad > 0 && pumpType > 0) && <>
+                <TouchableWithoutFeedback onPress={() => setView({'record': true})}>
+                    <Text style={styles.submit}>Submit</Text>
                 </TouchableWithoutFeedback>
-                {props.output && <TouchableWithoutFeedback
-                    onPress={() => props.setView({'output': true})}
-                    onPressIn={() => setHasPressed(true)}
-                    onPressOut={() => setHasPressed(false)}>
-                    <Text style={hasPressed ? styles.submitPress : styles.submit}>Submit</Text>
-                </TouchableWithoutFeedback>}
-                {!props.output && <Text style={styles.cannotSubmit}>Submit</Text>}
+                </>}
+                {(!pumpLoad || !pumpType) && <Text style={styles.cannotSubmit}>Next</Text>}
+            </>}
+            {view.record && <>
+                <TouchableWithoutFeedback
+                    onPressIn={() => startRecording()}
+                    onPressOut={() => {
+                        stopRecording();
+                        setSample(true);
+                    } }>
+                    <View style={recording ? styles.isRecording : styles.isNotRecording}>
+                        <Image style={styles.image} source={require('./assets/sound-recording-9.png')} />
+                    </View>
+                </TouchableWithoutFeedback><Text style={styles.instructions}>Press and hold to record audio of your machinery</Text>
+                <View style={styles.row}>
+                    <TouchableWithoutFeedback>
+                        <Text style={styles.playBack}>Play Back</Text>
+                    </TouchableWithoutFeedback>
+                    {props.output && <TouchableWithoutFeedback
+                        onPress={() => props.setView({ 'output': true })}
+                        onPressIn={() => setHasPressed(true)}
+                        onPressOut={() => setHasPressed(false)}>
+                        <Text style={hasPressed ? styles.submitPress : styles.submit}>Submit</Text>
+                    </TouchableWithoutFeedback>}
+                    {!props.output && <Text style={styles.cannotSubmit}>Submit</Text>}
+                </View>
+            </>}
+          
 
-            </View>
             
         </View>
     )
@@ -139,7 +163,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        columnGap: 20,
+        columnGap: 15,
     },
     crab: {
         width: 150,
@@ -219,6 +243,13 @@ const styles = StyleSheet.create({
     returnContainer: {
         position: 'relative',
         right: '35%'
-
     },
+    input: {
+        width: '40%',
+        borderColor: 'black',
+        borderWidth: 2,
+        textAlign: 'center',
+        fontSize: 20,
+        padding: 10,
+    }
 })
