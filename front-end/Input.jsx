@@ -42,12 +42,17 @@ export default function Input(props) {
         const uri = recording.getURI();
         setSample(true);
         console.log('Recording stopped and stored at', uri);
+        const audioFile = new File([uri], 'input.m4a', { type: 'audio/m4a' });
 
         const form = new FormData();
-        form.append('sound', uri);
+        form.append('sound', {
+            uri: uri,
+            name: 'input.m4a',
+            type: 'audio/m4a',
+          })
 
         await axios
-          .post('https://classic-pegasus-factual.ngrok-free.app', {sound: uri}, {
+          .post('https://classic-pegasus-factual.ngrok-free.app', form, {
             headers: {
                 'content-type': 'multipart/form-data'
             }
