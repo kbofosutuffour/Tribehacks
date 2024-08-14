@@ -7,3 +7,5 @@ Description: iOS app for estimating the load of vacuum pumps using fast Fourier 
 Front-end: JavaScript React
 
 Back-end: Python Flask
+
+Video Demo: https://www.youtube.com/watch?v=2nLCTsLsdJA
